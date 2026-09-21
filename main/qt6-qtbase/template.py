@@ -1,7 +1,7 @@
 # rebuild qt6-qtbase-private-devel consumers on upgrades
 pkgname = "qt6-qtbase"
 pkgver = "6.11.2"
-pkgrel = 0
+pkgrel = 1
 build_style = "cmake"
 configure_args = [
     "-DBUILD_WITH_PCH=OFF",
@@ -45,6 +45,7 @@ makedepends = [
     "icu-devel",
     "libb2-devel",
     "libinput-devel",
+    "libjpeg-turbo-devel",
     "libpng-devel",
     "libproxy-devel",
     "libxcb-devel",
@@ -214,6 +215,16 @@ def post_install(self):
         self.install_link(f"usr/lib/qt6/bin/{nsname}", f.name)
 
 
+@subpackage("qt6-qtbase-core")
+def _(self):
+    self.subdesc = "Core"
+    self.depends += [
+        "virtual:qt6-qtbase-translations!qt6-qtbase-translations-none"
+    ]
+
+    return ["usr/lib/libQt6Core.so.*"]
+
+
 @subpackage("qt6-qtbase-gui")
 def _(self):
     self.depends += ["hicolor-icon-theme"]
@@ -246,7 +257,6 @@ def _libpkg(name, libname, desc, extra=[]):
 for _sp in [
     ("opengl-widgets", "OpenGLWidgets", "OpenGL widgets"),
     ("dbus", "DBus", "DBus"),
-    ("core", "Core", "Core"),
     (
         "printsupport",
         "PrintSupport",
@@ -324,3 +334,13 @@ def _(self):
             "usr/lib/*.prl",
         ]
     )
+
+
+@subpackage("qt6-qtbase-translations-none")
+def _(self):
+    self.subdesc = "translations placeholder"
+    self.provides = ["qt6-qtbase-translations=0"]
+    self.install_if = [self.with_pkgver("qt6-qtbase-core"), "!base-locale"]
+    self.options = ["empty"]
+
+    return []
